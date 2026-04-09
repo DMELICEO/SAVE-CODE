@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" type="image/png" href="logo.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Guarda HTML | Editor HTML :/</title>
+    <style>
+        :root {
+            --bg: #f8fafc; /* Fondo general muy claro */
+            --surface: #ffffff; /* Superficie blanca pura */
+            --accent: #2563eb; /* Azul sofisticado */
+            --accent-light: #eff6ff; /* Azul muy suave para fondos */
+            --text-main: #1e293b; /* Texto casi negro/azul oscuro */
+            --text-dim: #64748b; /* Texto secundario grisáceo */
+            --border: #e2e8f0; /* Bordes sutiles */
+            --danger: #ef4444;
+            --success: #10b981;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- Header --- */
+        header {
+            padding: 1rem 1.5rem;
+            background: var(--surface);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .brand { 
+            font-weight: 700; 
+            color: var(--accent); 
+            font-size: 1.2rem; 
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand span { font-weight: 300; color: var(--text-dim); font-size: 0.9rem; }
+
+        .stats { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text-dim); }
+
+        /* --- Toolbar --- */
+        .toolbar {
+            padding: 10px 1.5rem;
+            display: flex;
+            gap: 10px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .toolbar::-webkit-scrollbar { display: none; }
+
+        .tool-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tool-btn:hover { 
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        .btn-view { 
+            background: var(--accent); 
+            border: none; 
+            color: white; 
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        }
+        
+        .btn-view:hover { 
+            background: #1d4ed8; 
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* --- Editor --- */
+        main { flex: 1; background: var(--surface); margin: 15px; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
+
+        #editor {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            color: #334155;
+            border: none;
+            padding: 25px;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 15px;
+            line-height: 1.7;
+            outline: none;
+            resize: none;
+        }
+
+        /* --- Visor Modal --- */
+        #modalViewer {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .modal-header {
+            background: var(--surface);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .close-btn {
+            background: #f1f5f9;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .close-btn:hover { background: var(--danger); color: white; border-color: var(--danger); }
+
+        #previewFrame { flex: 1; border: none; width: 100%; background: white; }
+
+        /* --- Footer --- */
+        footer {
+            padding: 15px 1.5rem;
+            background: var(--surface);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-action {
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .btn-download { background: var(--accent); color: white; }
+        .btn-txt { background: var(--accent-light); color: var(--accent); }
+        .btn-action:active { transform: scale(0.97); }
+
+        /* --- Mobile Optimization --- */
+        @media (max-width: 600px) {
+            header { padding: 0.8rem 1rem; }
+            main { margin: 10px; }
+            #editor { font-size: 14px; padding: 15px; }
+            .tool-btn { padding: 6px 12px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">GUARDA HTML <span> :) </span></div>
+        <div class="stats" id="charCount">0 caracteres</div>
+    </header>
+
+    <div class="toolbar">
+        <button class="tool-btn btn-view" onclick="openViewer()">👁️ Ver Resultado</button>
+        <button class="tool-btn" onclick="pasteFromClipboard()">📋 Pegar</button>
+        <button class="tool-btn" onclick="insertBase()">⚡ Estructura</button>
+        <button class="tool-btn" style="color:var(--danger)" onclick="clearAll()">🗑️ Borrar</button>
+    </div>
+
+    <main>
+        <textarea id="editor" spellcheck="false" placeholder="Escribe o pega tu código aquí..."></textarea>
+    </main>
+
+    <div id="modalViewer">
+        <div class="modal-header">
+            <span style="font-weight:700; font-size:14px; color:var(--text-dim)">VISTA PREVIA</span>
+            <button class="close-btn" onclick="closeViewer()">Regresar al Editor</button>
+        </div>
+        <iframe id="previewFrame"></iframe>
+    </div>
+
+    <footer>
+        <button class="btn-action btn-txt" onclick="download('txt')">Guardar como TXT</button>
+        <button class="btn-action btn-download" onclick="download('html')">Descargar HTML</button>
+    </footer>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const charCount = document.getElementById('charCount');
+        const modal = document.getElementById('modalViewer');
+        const previewFrame = document.getElementById('previewFrame');
+
+        editor.addEventListener('input', () => {
+            charCount.innerText = `${editor.value.length} caracteres`;
+        });
+
+        function openViewer() {
+            const code = editor.value;
+            if(!code.trim()) return alert("El editor está vacío.");
+            
+            modal.style.display = 'flex';
+            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+            doc.open();
+            doc.write(code);
+            doc.close();
+        }
+
+        function closeViewer() {
+            modal.style.display = 'none';
+        }
+
+        async function pasteFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
+                charCount.innerText = `${editor.value.length} caracteres`;
+            } catch (err) {
+                alert("Permite el acceso al portapapeles en la configuración de tu navegador.");
+            }
+        }
+
+        function insertBase() {
+            const base = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Proyecto Sapphire</title>
+  <style>
+    body { 
+        font-family: 'Segoe UI', system-ui, sans-serif; 
+        background: #f0f9ff; 
+        color: #0c4a6e; 
+        display: flex; 
+        flex-direction: column;
+        justify-content: center; 
+        align-items: center; 
+        height: 100vh; 
+        margin:0; 
+    }
+    .container {
+        background: white;
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    h1 { color: #0284c7; margin-top: 0; }
+    p { color: #7dd3fc; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p>Proyecto Nuevo</p>
+    <h1>GUARDA HTML</h1>
+    <small>Edita este código para comenzar.</small>
+  </div>
+</body>
+</html>`;
+            editor.value = base;
+            charCount.innerText = `${editor.value.length} caracteres`;
+        }
+
+        function clearAll() {
+            if(confirm("¿Deseas vaciar el editor?")) {
+                editor.value = "";
+                charCount.innerText = "0 caracteres";
+            }
+        }
+
+        function download(ext) {
+            const code = editor.value;
+            if(!code.trim()) return alert("No hay contenido para guardar.");
+
+            const blob = new Blob([code], { type: (ext === 'html' ? 'text/html' : 'text/plain') + ";charset=utf-8" });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `sapphire_dev_${Date.now()}.${ext}`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        editor.addEventListener('keydown', function(e) {
+            if (e.key == 'Tab') {
+                e.preventDefault();
+                let start = this.selectionStart;
+                let end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + "  " + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 2;
+            }
+        });
+    </script>
+</body>
+</html>

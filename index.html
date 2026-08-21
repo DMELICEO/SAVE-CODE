@@ -3,335 +3,596 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="apple-touch-icon" href="logo.png">
-    <link rel="icon" type="image/png" href="logo.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>Guarda HTML | Editor HTML :/</title>
+    <title>Editor y Exportador Multi-Formato Profesional</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
-            --bg: #f8fafc; /* Fondo general muy claro */
-            --surface: #ffffff; /* Superficie blanca pura */
-            --accent: #2563eb; /* Azul sofisticado */
-            --accent-light: #eff6ff; /* Azul muy suave para fondos */
-            --text-main: #1e293b; /* Texto casi negro/azul oscuro */
-            --text-dim: #64748b; /* Texto secundario grisáceo */
-            --border: #e2e8f0; /* Bordes sutiles */
-            --danger: #ef4444;
-            --success: #10b981;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --bg-base: #0f172a;        /* Azul pizarra oscuro profundo */
+            --bg-surface: #1e293b;     /* Azul superficie */
+            --text-main: #f8fafc;      /* Blanco azulado de alto contraste */
+            --text-muted: #94a3b8;     /* Azul grisáceo atenuado */
+            --accent: #38bdf8;         /* Azul celeste brillante para resaltar */
+            --accent-hover: #0ea5e9;   /* Celeste de interacción */
+            --danger: #f43f5e;         /* Coral/Rojo suave para peligro */
+            --border-color: #334155;   /* Bordes definidos en tono azul gris */
+            --radius: 4px;
+            --font-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
-            font-family: 'Inter', -apple-system, system-ui, sans-serif;
-            background-color: var(--bg);
+            background-color: var(--bg-base);
             color: var(--text-main);
-            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .editor-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 95vh;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
-        /* --- Header --- */
-        header {
-            padding: 1rem 1.5rem;
-            background: var(--surface);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        .editor-container.fullscreen {
+            max-width: 100%;
+            height: 100vh;
+            border: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
         }
 
-        .brand { 
-            font-weight: 700; 
-            color: var(--accent); 
-            font-size: 1.2rem; 
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .brand span { font-weight: 300; color: var(--text-dim); font-size: 0.9rem; }
-
-        .stats { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text-dim); }
-
-        /* --- Toolbar --- */
         .toolbar {
-            padding: 10px 1.5rem;
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            overflow-x: auto;
-        }
-
-        .toolbar::-webkit-scrollbar { display: none; }
-
-        .tool-btn {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-            display: flex;
+            padding: 12px;
+            background-color: #131e35;
+            border-bottom: 1px solid var(--border-color);
             align-items: center;
-            gap: 6px;
+            justify-content: space-between;
         }
 
-        .tool-btn:hover { 
+        .toolbar-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"], select, button {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus {
             border-color: var(--accent);
+        }
+
+        input[type="text"] {
+            cursor: text;
+            width: 180px;
+        }
+
+        optgroup {
+            background-color: var(--bg-surface);
             color: var(--accent);
-            background: var(--accent-light);
+            font-style: normal;
+            font-weight: bold;
         }
 
-        .btn-view { 
-            background: var(--accent); 
-            border: none; 
-            color: white; 
-            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        option {
+            background-color: var(--bg-base);
+            color: var(--text-main);
         }
+
+        button:hover {
+            border-color: #475569;
+        }
+
+        .btn-action { color: #ffffff; }
+        .btn-action:hover { color: var(--accent); border-color: var(--accent); }
         
-        .btn-view:hover { 
-            background: #1d4ed8; 
-            color: white;
-            transform: translateY(-1px);
+        .btn-danger { color: var(--text-muted); }
+        .btn-danger:hover { color: var(--danger); border-color: var(--danger); }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: #0f172a;
+            font-weight: bold;
+            border: 1px solid var(--accent);
+        }
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
         }
 
-        /* --- Editor --- */
-        main { flex: 1; background: var(--surface); margin: 15px; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
+        .editor-workspace {
+            flex-grow: 1;
+            display: flex;
+            position: relative;
+        }
 
-        #editor {
+        textarea {
             width: 100%;
             height: 100%;
-            background: transparent;
-            color: #334155;
+            background-color: transparent;
+            color: var(--text-main);
             border: none;
-            padding: 25px;
-            font-family: 'Fira Code', 'Consolas', monospace;
-            font-size: 15px;
-            line-height: 1.7;
-            outline: none;
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            line-height: 1.6;
             resize: none;
+            outline: none;
         }
 
-        /* --- Visor Modal --- */
-        #modalViewer {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: var(--bg);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .modal-header {
-            background: var(--surface);
-            padding: 12px 20px;
+        .statusbar {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
+            padding: 6px 12px;
+            background-color: #0b0f19;
+            border-top: 1px solid var(--border-color);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
         }
 
-        .close-btn {
-            background: #f1f5f9;
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 8px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.2s;
-        }
+        ::-webkit-scrollbar { width: 12px; height: 12px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: #334155; border: 2px solid var(--bg-base); border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-        .close-btn:hover { background: var(--danger); color: white; border-color: var(--danger); }
-
-        #previewFrame { flex: 1; border: none; width: 100%; background: white; }
-
-        /* --- Footer --- */
-        footer {
-            padding: 15px 1.5rem;
-            background: var(--surface);
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            border-top: 1px solid var(--border);
-        }
-
-        .btn-action {
-            padding: 14px;
-            border-radius: 10px;
-            border: none;
-            font-weight: 700;
-            cursor: pointer;
-            text-align: center;
-            font-size: 14px;
-            transition: 0.2s;
-        }
-
-        .btn-download { background: var(--accent); color: white; }
-        .btn-txt { background: var(--accent-light); color: var(--accent); }
-        .btn-action:active { transform: scale(0.97); }
-
-        /* --- Mobile Optimization --- */
-        @media (max-width: 600px) {
-            header { padding: 0.8rem 1rem; }
-            main { margin: 10px; }
-            #editor { font-size: 14px; padding: 15px; }
-            .tool-btn { padding: 6px 12px; font-size: 12px; }
+        @media (max-width: 950px) {
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .toolbar-group { justify-content: space-between; width: 100%; }
+            input[type="text"], select { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="brand">GUARDA HTML <span> :) </span></div>
-        <div class="stats" id="charCount">0 caracteres</div>
-    </header>
-
-    <div class="toolbar">
-        <button class="tool-btn btn-view" onclick="openViewer()">👁️ Ver Resultado</button>
-        <button class="tool-btn" onclick="pasteFromClipboard()">📋 Pegar</button>
-        <button class="tool-btn" onclick="insertBase()">⚡ Estructura</button>
-        <button class="tool-btn" style="color:var(--danger)" onclick="clearAll()">🗑️ Borrar</button>
-    </div>
-
-    <main>
-        <textarea id="editor" spellcheck="false" placeholder="Escribe o pega tu código aquí..."></textarea>
-    </main>
-
-    <div id="modalViewer">
-        <div class="modal-header">
-            <span style="font-weight:700; font-size:14px; color:var(--text-dim)">VISTA PREVIA</span>
-            <button class="close-btn" onclick="closeViewer()">Regresar al Editor</button>
+    <div class="editor-container" id="editorContainer">
+        <div class="toolbar">
+            <div class="toolbar-group">
+                <button id="btnOpen" class="btn-action" title="Abrir archivo desde el dispositivo">📂 Abrir</button>
+                <button id="btnCopy" class="btn-action" title="Copiar todo el texto">📄 Copiar</button>
+                <button id="btnPaste" class="btn-action" title="Pegar desde el portapapeles">📋 Pegar</button>
+                <button id="btnClear" class="btn-danger" title="Borrar todo el contenido rápidamente">🗑️ Limpiar</button>
+                <button id="btnFullscreen" class="btn-action" title="Alternar modo pantalla completa">⛶ Pantalla</button>
+            </div>
+            
+            <div class="toolbar-group">
+                <input type="text" id="filenameInput" placeholder="Nombre del archivo" value="documento">
+                <select id="formatSelect">
+                    <optgroup label="Texto y Documentación">
+                        <option value="txt">.TXT (Texto Plano)</option>
+                        <option value="md">.MD (Markdown)</option>
+                        <option value="rtf">.RTF (Rich Text Format)</option>
+                        <option value="pdf">.PDF (Portable Document)</option>
+                        <option value="log">.LOG (Registro de Sistema)</option>
+                        <option value="tex">.TEX (Documento LaTeX)</option>
+                        <option value="bak">.BAK (Copia de Respaldo)</option>
+                    </optgroup>
+                    <optgroup label="Ofimática e Intercambio">
+                        <option value="docx">.DOCX (Word Moderno)</option>
+                        <option value="doc">.DOC (Word Antiguo)</option>
+                        <option value="odt">.ODT (OpenDocument)</option>
+                        <option value="pages">.PAGES (Apple Pages)</option>
+                        <option value="csv">.CSV (Valores Separados por Comas)</option>
+                    </optgroup>
+                    <optgroup label="Desarrollo y Configuración">
+                        <option value="json">.JSON (Estructura de Datos)</option>
+                        <option value="html">.HTML (Código Web Enriquecido)</option>
+                        <option value="xml">.XML (Markup Extensible)</option>
+                        <option value="yaml">.YAML (Configuraciones Estructuradas)</option>
+                        <option value="sql">.SQL (Sentencias de Base de Datos)</option>
+                        <option value="env">.ENV (Variables de Entorno)</option>
+                        <option value="ini">.INI (Inicialización/Config)</option>
+                        <option value="conf">.CONF (Configuración Unix)</option>
+                    </optgroup>
+                    <optgroup label="Programación y Scripts">
+                        <option value="js">.JS (JavaScript)</option>
+                        <option value="ts">.TS (TypeScript)</option>
+                        <option value="py">.PY (Python)</option>
+                        <option value="css">.CSS (Hojas de Estilo)</option>
+                        <option value="sh">.SH (Script Bash Linux)</option>
+                        <option value="bat">.BAT (Script Batch Windows)</option>
+                        <option value="psc">.PSC (Pseudocódigo PSeInt)</option>
+                        <option value="java">.JAVA (Código Java)</option>
+                        <option value="cpp">.CPP (Código C++)</option>
+                        <option value="php">.PHP (Script PHP)</option>
+                    </optgroup>
+                </select>
+                <button id="btnDownload" class="btn-primary">⬇️ Guardar</button>
+            </div>
         </div>
-        <iframe id="previewFrame"></iframe>
-    </div>
 
-    <footer>
-        <button class="btn-action btn-txt" onclick="download('txt')">Guardar como TXT</button>
-        <button class="btn-action btn-download" onclick="download('html')">Descargar HTML</button>
-    </footer>
+        <input type="file" id="fileInput" style="display: none;">
+
+        <div class="editor-workspace">
+            <textarea id="textEditor" placeholder="Escribe, edita, abre o pega tu contenido aquí..." spellcheck="false"></textarea>
+        </div>
+
+        <div class="statusbar">
+            <div>
+                Palabras: <span id="wordCount" style="color: var(--accent);">0</span> | 
+                Caracteres: <span id="charCount" style="color: var(--accent);">0</span> |
+                Líneas: <span id="lineCount" style="color: var(--accent);">1</span>
+            </div>
+            <div id="saveStatus">Listo</div>
+        </div>
+    </div>
 
     <script>
-        const editor = document.getElementById('editor');
-        const charCount = document.getElementById('charCount');
-        const modal = document.getElementById('modalViewer');
-        const previewFrame = document.getElementById('previewFrame');
+        const editor = document.getElementById('textEditor');
+        const btnOpen = document.getElementById('btnOpen');
+        const fileInput = document.getElementById('fileInput');
+        const btnPaste = document.getElementById('btnPaste');
+        const btnCopy = document.getElementById('btnCopy');
+        const btnClear = document.getElementById('btnClear');
+        const btnFullscreen = document.getElementById('btnFullscreen');
+        const btnDownload = document.getElementById('btnDownload');
+        const formatSelect = document.getElementById('formatSelect');
+        const filenameInput = document.getElementById('filenameInput');
+        const container = document.getElementById('editorContainer');
+        
+        const wordCountDisplay = document.getElementById('wordCount');
+        const charCountDisplay = document.getElementById('charCount');
+        const lineCountDisplay = document.getElementById('lineCount');
+        const saveStatus = document.getElementById('saveStatus');
 
-        editor.addEventListener('input', () => {
-            charCount.innerText = `${editor.value.length} caracteres`;
+        let currentFileHandle = null;
+
+        editor.addEventListener('input', updateStats);
+        
+        function updateStats() {
+            const text = editor.value;
+            charCountDisplay.textContent = text.length;
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            wordCountDisplay.textContent = words;
+            const lines = text.split('\n').length;
+            lineCountDisplay.textContent = lines;
+        }
+
+        // --- SISTEMA INTELIGENTE DE DETECCIÓN DE CARACTERES ---
+        async function decodificarTexto(archivo) {
+            const arrayBuffer = await archivo.arrayBuffer();
+            let textoDecodificado = "";
+            try {
+                // Intento 1: Leer como UTF-8 estricto (fatal: true hace que falle si hay caracteres extraños)
+                const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+                textoDecodificado = utf8Decoder.decode(arrayBuffer);
+            } catch (e) {
+                // Intento 2: Si falla el UTF-8, usamos Windows-1252 (ANSI) que soporta tildes y ñ correctamente
+                const ansiDecoder = new TextDecoder('windows-1252');
+                textoDecodificado = ansiDecoder.decode(arrayBuffer);
+            }
+            return textoDecodificado;
+        }
+
+        btnOpen.addEventListener('click', async () => {
+            const currentExt = formatSelect.value;
+            
+            if ('showOpenFilePicker' in window) {
+                try {
+                    const options = {
+                        types: [{
+                            description: `Archivo .${currentExt.toUpperCase()}`,
+                            accept: { '*/*': [`.${currentExt}`] }
+                        }],
+                        excludeAcceptAllOption: false 
+                    };
+                    
+                    const [handle] = await window.showOpenFilePicker(options);
+                    currentFileHandle = handle;
+                    const file = await handle.getFile();
+                    
+                    // Usar decodificador inteligente
+                    editor.value = await decodificarTexto(file);
+                    
+                    const lastDot = file.name.lastIndexOf('.');
+                    const name = lastDot !== -1 ? file.name.substring(0, lastDot) : file.name;
+                    const ext = lastDot !== -1 ? file.name.substring(lastDot + 1).toLowerCase() : 'txt';
+                    
+                    filenameInput.value = name;
+                    
+                    if (document.querySelector(`#formatSelect option[value="${ext}"]`)) {
+                        formatSelect.value = ext;
+                    }
+                    
+                    updateStats();
+                    showStatus('Archivo vinculado y abierto');
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        showStatus('Error al abrir archivo', true);
+                    }
+                }
+            } else {
+                fileInput.accept = `.${currentExt}`;
+                fileInput.click();
+            }
         });
 
-        function openViewer() {
-            const code = editor.value;
-            if(!code.trim()) return alert("El editor está vacío.");
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            currentFileHandle = null; 
             
-            modal.style.display = 'flex';
-            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-            doc.open();
-            doc.write(code);
-            doc.close();
-        }
+            try {
+                // Usar decodificador inteligente también en móviles y navegadores antiguos
+                editor.value = await decodificarTexto(file);
+                
+                const lastDot = file.name.lastIndexOf('.');
+                const name = lastDot !== -1 ? file.name.substring(0, lastDot) : file.name;
+                const ext = lastDot !== -1 ? file.name.substring(lastDot + 1).toLowerCase() : 'txt';
+                
+                filenameInput.value = name;
+                
+                if (document.querySelector(`#formatSelect option[value="${ext}"]`)) {
+                    formatSelect.value = ext;
+                }
+                
+                updateStats();
+                showStatus('Archivo cargado correctamente');
+                fileInput.value = ''; 
+            } catch (error) {
+                showStatus('Error al leer el archivo', true);
+            }
+        });
 
-        function closeViewer() {
-            modal.style.display = 'none';
-        }
+        btnCopy.addEventListener('click', async () => {
+            if(!editor.value) return showStatus('Nada que copiar', true);
+            try {
+                await navigator.clipboard.writeText(editor.value);
+                showStatus('Contenido copiado');
+            } catch (err) {
+                showStatus('Error al copiar', true);
+            }
+        });
 
-        async function pasteFromClipboard() {
+        btnPaste.addEventListener('click', async () => {
             try {
                 const text = await navigator.clipboard.readText();
                 const start = editor.selectionStart;
                 const end = editor.selectionEnd;
                 editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
-                charCount.innerText = `${editor.value.length} caracteres`;
+                editor.selectionStart = editor.selectionEnd = start + text.length;
+                editor.focus();
+                updateStats();
+                showStatus('Texto pegado');
             } catch (err) {
-                alert("Permite el acceso al portapapeles en la configuración de tu navegador.");
-            }
-        }
-
-        function insertBase() {
-            const base = `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Mi Proyecto Sapphire</title>
-  <style>
-    body { 
-        font-family: 'Segoe UI', system-ui, sans-serif; 
-        background: #f0f9ff; 
-        color: #0c4a6e; 
-        display: flex; 
-        flex-direction: column;
-        justify-content: center; 
-        align-items: center; 
-        height: 100vh; 
-        margin:0; 
-    }
-    .container {
-        background: white;
-        padding: 40px;
-        border-radius: 24px;
-        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-        text-align: center;
-    }
-    h1 { color: #0284c7; margin-top: 0; }
-    p { color: #7dd3fc; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <p>Proyecto Nuevo</p>
-    <h1>GUARDA HTML</h1>
-    <small>Edita este código para comenzar.</small>
-  </div>
-</body>
-</html>`;
-            editor.value = base;
-            charCount.innerText = `${editor.value.length} caracteres`;
-        }
-
-        function clearAll() {
-            if(confirm("¿Deseas vaciar el editor?")) {
-                editor.value = "";
-                charCount.innerText = "0 caracteres";
-            }
-        }
-
-        function download(ext) {
-            const code = editor.value;
-            if(!code.trim()) return alert("No hay contenido para guardar.");
-
-            const blob = new Blob([code], { type: (ext === 'html' ? 'text/html' : 'text/plain') + ";charset=utf-8" });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `sapphire_dev_${Date.now()}.${ext}`;
-            link.click();
-            URL.revokeObjectURL(link.href);
-        }
-
-        editor.addEventListener('keydown', function(e) {
-            if (e.key == 'Tab') {
-                e.preventDefault();
-                let start = this.selectionStart;
-                let end = this.selectionEnd;
-                this.value = this.value.substring(0, start) + "  " + this.value.substring(end);
-                this.selectionStart = this.selectionEnd = start + 2;
+                showStatus('Usa Ctrl+V / ⌘+V directamente', true);
             }
         });
+
+        btnClear.addEventListener('click', () => {
+            if (editor.value.length > 0) {
+                if (confirm('¿Seguro que deseas vaciar el editor? Perderás el texto no guardado.')) {
+                    editor.value = '';
+                    currentFileHandle = null; 
+                    editor.focus();
+                    updateStats();
+                    showStatus('Contenido limpiado');
+                }
+            }
+        });
+
+        btnFullscreen.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(() => {
+                    container.classList.toggle('fullscreen');
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                container.classList.add('fullscreen');
+            } else {
+                container.classList.remove('fullscreen');
+            }
+        });
+
+        function showStatus(message, isError = false) {
+            saveStatus.textContent = message;
+            saveStatus.style.color = isError ? 'var(--danger)' : 'var(--accent)';
+            setTimeout(() => {
+                saveStatus.textContent = 'Listo';
+                saveStatus.style.color = 'var(--text-muted)';
+            }, 2500);
+        }
+
+        btnDownload.addEventListener('click', async () => {
+            const text = editor.value;
+            const format = formatSelect.value;
+            let filename = filenameInput.value.trim() || 'documento';
+            filename = `${filename}.${format}`;
+            
+            if (!text.trim() && format !== 'pdf') {
+                showStatus('El editor está vacío', true);
+                return;
+            }
+
+            if (currentFileHandle && currentFileHandle.name === filename) {
+                try {
+                    let contentToSave = text;
+                    
+                    if (format === 'html') {
+                        if (!(text.trim().toLowerCase().startsWith('<!doc') || text.trim().toLowerCase().startsWith('<html'))) {
+                            contentToSave = `<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>${filenameInput.value}</title>\n<style>body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; line-height: 1.6; color: #f8fafc; background-color: #0f172a; }</style>\n</head>\n<body>\n${text}\n</body>\n</html>`;
+                        }
+                    } else if (format === 'doc' || format === 'docx') {
+                        contentToSave = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>\n<head><meta charset='utf-8'><title>${filenameInput.value}</title></head>\n<body>${text.replace(/\n/g, "<br>")}</body>\n</html>`;
+                    } else if (format === 'rtf') {
+                        const rtfText = text.replace(/\\/g, "\\\\").replace(/{/g, "\\{").replace(/}/g, "\\}").replace(/\n/g, "\\par\n");
+                        contentToSave = `{\\rtf1\\ansi\\ansicpg1252\\deff0{\\fonttbl{\\f0\\fnil\\fcharset0 Arial;}}\n{\\colortbl ;\\red255\\green255\\blue255;}\n\\viewkind4\\uc1\\pard\\cf1\\f0\\fs24 USD\n}`;
+                    } else if (format === 'pdf') {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF();
+                        const margin = 15;
+                        const maxWidth = doc.internal.pageSize.width - (margin * 2);
+                        const lines = doc.splitTextToSize(text, maxWidth);
+                        doc.setFont("courier", "normal");
+                        doc.setFontSize(10);
+                        let cursorY = margin + 5;
+                        lines.forEach(line => {
+                            if (cursorY > doc.internal.pageSize.height - margin) {
+                                doc.addPage();
+                                cursorY = margin + 5;
+                            }
+                            doc.text(line, margin, cursorY);
+                            cursorY += 5;
+                        });
+                        contentToSave = doc.output('arraybuffer');
+                    }
+
+                    const writable = await currentFileHandle.createWritable();
+                    await writable.write(contentToSave);
+                    await writable.close();
+                    showStatus('Archivo actualizado con éxito');
+                    return; 
+                } catch(e) {
+                    console.error("Fallo guardado directo: ", e);
+                }
+            }
+
+            try {
+                switch(format) {
+                    case 'pdf': exportPDF(text, filename); break;
+                    case 'html': exportHTML(text, filename); break;
+                    case 'doc': case 'docx': exportWord(text, filename, format); break;
+                    case 'rtf': exportRTF(text, filename); break;
+                    default: exportStandardText(text, filename, format); break;
+                }
+                showStatus('Descarga iniciada con éxito');
+            } catch(e) {
+                showStatus('Fallo en la conversión del formato', true);
+            }
+        });
+
+        function downloadBlob(content, filename, mimeType) {
+            let finalMimeType = mimeType;
+            if (typeof content === 'string' && !finalMimeType.includes('charset=')) {
+                finalMimeType += ';charset=utf-8';
+            }
+            
+            const blob = new Blob([content], { type: finalMimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportStandardText(text, filename, format) {
+            const mimeTypes = {
+                'txt': 'text/plain',
+                'md': 'text/markdown',
+                'log': 'text/plain',
+                'tex': 'text/x-tex',
+                'bak': 'application/octet-stream',
+                'csv': 'text/csv',
+                'odt': 'application/vnd.oasis.opendocument.text',
+                'pages': 'application/x-iwork-pages-sffpages',
+                'json': 'application/json',
+                'xml': 'application/xml',
+                'yaml': 'application/x-yaml',
+                'sql': 'application/sql',
+                'env': 'text/plain',
+                'ini': 'text/plain',
+                'conf': 'text/plain',
+                'js': 'application/javascript',
+                'ts': 'application/typescript',
+                'py': 'application/x-python',
+                'css': 'text/css',
+                'sh': 'application/x-sh',
+                'bat': 'application/x-bat',
+                'psc': 'text/plain',
+                'java': 'text/x-java-source',
+                'cpp': 'text/x-c',
+                'php': 'application/x-httpd-php'
+            };
+            
+            let mime = mimeTypes[format] || 'text/plain';
+            
+            if (mime === 'text/plain' && !['txt', 'log', 'env', 'ini', 'conf'].includes(format)) {
+                mime = 'application/octet-stream';
+            }
+            
+            downloadBlob(text, filename, mime);
+        }
+
+        function exportHTML(text, filename) {
+            if (text.trim().toLowerCase().startsWith('<!doc') || text.trim().toLowerCase().startsWith('<html')) {
+                downloadBlob(text, filename, 'text/html');
+            } else {
+                const fullHtml = `<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>${filenameInput.value}</title>\n<style>body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; line-height: 1.6; color: #f8fafc; background-color: #0f172a; }</style>\n</head>\n<body>\n${text}\n</body>\n</html>`;
+                downloadBlob(fullHtml, filename, 'text/html');
+            }
+        }
+
+        function exportWord(text, filename, format) {
+            const fullHtml = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>\n<head><meta charset='utf-8'><title>${filenameInput.value}</title></head>\n<body>${text.replace(/\n/g, "<br>")}</body>\n</html>`;
+            const mime = format === 'docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/msword';
+            downloadBlob(fullHtml, filename, mime);
+        }
+
+        function exportRTF(text, filename) {
+            const rtfText = text.replace(/\\/g, "\\\\").replace(/{/g, "\\{").replace(/}/g, "\\}").replace(/\n/g, "\\par\n");
+            const rtfContent = `{\\rtf1\\ansi\\ansicpg1252\\deff0{\\fonttbl{\\f0\\fnil\\fcharset0 Arial;}}\n{\\colortbl ;\\red255\\green255\\blue255;}\n\\viewkind4\\uc1\\pard\\cf1\\f0\\fs24 USD\n}`;
+            downloadBlob(rtfContent, filename, 'application/rtf');
+        }
+
+        function exportPDF(text, filename) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const margin = 15;
+            const maxWidth = doc.internal.pageSize.width - (margin * 2);
+            
+            const lines = doc.splitTextToSize(text, maxWidth);
+            doc.setFont("courier", "normal");
+            doc.setFontSize(10);
+            
+            let cursorY = margin + 5;
+            lines.forEach(line => {
+                if (cursorY > doc.internal.pageSize.height - margin) {
+                    doc.addPage();
+                    cursorY = margin + 5;
+                }
+                doc.text(line, margin, cursorY);
+                cursorY += 5;
+            });
+            doc.save(filename);
+        }
     </script>
 </body>
 </html>
